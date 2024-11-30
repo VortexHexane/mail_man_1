@@ -1,28 +1,56 @@
 package com.vortex.mail_man_1
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import com.vortex.mail_man_1.ui.theme.Mail_man_1Theme
+import com.vortex.mail_man_1.viewmodel.AuthState
+import com.vortex.mail_man_1.viewmodel.AuthViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: AuthViewModel by viewModels()
+    private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        googleSignInLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            lifecycleScope.launch {
+                viewModel.handleGoogleSignInResult(result.data)
+            }
+        }
+
         setContent {
             Mail_man_1Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                val authState by viewModel.authState.collectAsState()
+                
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AuthScreen(
+                        authState = authState,
+                        onSignInClick = { 
+                            val signInIntent = viewModel.getGoogleSignInClient(this).signInIntent
+                            googleSignInLauncher.launch(signInIntent)
+                        },
+                        onSignOutClick = {
+                            viewModel.signOut(this)
+                        }
                     )
                 }
             }
@@ -31,17 +59,38 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Mail_man_1Theme {
-        Greeting("Android")
+fun AuthScreen(
+    authState: AuthState,
+    onSignInClick: () -> Unit,
+    onSignOutClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        when (authState) {
+            is AuthState.Initial -> {
+                Button(onClick = onSignInClick) {
+                    Text("Sign in with Google")
+                }
+            }
+            is AuthState.Success -> {
+                Text("Welcome ${authState.user?.displayName ?: "User"}")
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onSignOutClick) {
+                    Text("Sign Out")
+                }
+            }
+            is AuthState.Error -> {
+                Text("Error: ${authState.message}")
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onSignInClick) {
+                    Text("Retry")
+                }
+            }
+        }
     }
 }
