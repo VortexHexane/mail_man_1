@@ -14,9 +14,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavOptions
+import com.vortex.mail_man_1.navigation.NavDestination
+import com.vortex.mail_man_1.screens.*
 import com.vortex.mail_man_1.ui.theme.Mail_man_1Theme
 import com.vortex.mail_man_1.viewmodel.AuthState
 import com.vortex.mail_man_1.viewmodel.AuthViewModel
+import com.vortex.mail_man_1.components.BottomNavBar
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -42,16 +49,66 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AuthScreen(
-                        authState = authState,
-                        onSignInClick = { 
-                            val signInIntent = viewModel.getGoogleSignInClient(this).signInIntent
-                            googleSignInLauncher.launch(signInIntent)
-                        },
-                        onSignOutClick = {
-                            viewModel.signOut(this)
-                        }
-                    )
+                    MainScreen(authState)
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun MainScreen(authState: AuthState) {
+        when (authState) {
+            is AuthState.Success -> {
+                val navController = rememberNavController()
+                Scaffold(
+                    bottomBar = {
+                        BottomNavBar(
+                            currentRoute = navController.currentDestination?.route ?: NavDestination.Home.route,
+                            onNavigate = { destination ->
+                                navController.navigate(destination.route) {
+                                    popUpTo(NavDestination.Home.route) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        )
+                    }
+                ) { paddingValues ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = NavDestination.Home.route,
+                        modifier = Modifier.padding(paddingValues)
+                    ) {
+                        composable(NavDestination.Home.route) { HomeScreen() }
+                        composable(NavDestination.Pomodoro.route) { PomodoroScreen() }
+                        composable(NavDestination.CreateNote.route) { CreateNoteScreen() }
+                        composable(NavDestination.KanbanBoard.route) { KanbanBoardScreen() }
+                        composable(NavDestination.Settings.route) { SettingsScreen() }
+                    }
+                }
+            }
+            is AuthState.Initial -> {
+                AuthScreen(
+                    authState = authState,
+                    onSignInClick = { 
+                        val signInIntent = viewModel.getGoogleSignInClient(this).signInIntent
+                        googleSignInLauncher.launch(signInIntent)
+                    },
+                    onSignOutClick = {
+                        viewModel.signOut(this)
+                    }
+                )
+            }
+            is AuthState.Error -> {
+                Text("Error: ${authState.message}")
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { 
+                    val signInIntent = viewModel.getGoogleSignInClient(this).signInIntent
+                    googleSignInLauncher.launch(signInIntent)
+                }) {
+                    Text("Retry")
                 }
             }
         }

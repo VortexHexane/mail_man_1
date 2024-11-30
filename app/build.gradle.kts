@@ -63,4 +63,12 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    
+    // For PDF export
+    implementation("com.itextpdf:itext7-core:7.2.3")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 }
