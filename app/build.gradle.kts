@@ -71,4 +71,7 @@ dependencies {
     implementation("com.itextpdf:itext7-core:7.2.3")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 }

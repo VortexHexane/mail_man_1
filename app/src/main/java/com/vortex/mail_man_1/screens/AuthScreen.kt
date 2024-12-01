@@ -45,6 +45,14 @@ fun AuthScreen(
                     Text("Sign In with Google")
                 }
             }
+            AuthState.Loading -> {
+                CircularProgressIndicator()
+            }
+            AuthState.Unauthenticated -> {
+                Button(onClick = onSignInClick) {
+                    Text("Sign In with Google")
+                }
+            }
         }
     }
 } 

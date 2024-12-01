@@ -12,7 +12,6 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
-import androidx.navigation.compose.currentBackStackEntryAsState
 
 class AuthViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
@@ -42,10 +41,4 @@ class AuthViewModel : ViewModel() {
         getGoogleSignInClient(context).signOut()
         _authState.value = AuthState.Initial
     }
-}
-
-sealed class AuthState {
-    object Initial : AuthState()
-    data class Success(val user: FirebaseUser?) : AuthState()
-    data class Error(val message: String) : AuthState()
 } 
