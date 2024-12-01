@@ -23,16 +23,15 @@ fun PomodoroScreen(viewModel: PomodoroViewModel = viewModel()) {
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = "Pomodoro Timer",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Start
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
 
         Text(
@@ -43,7 +42,8 @@ fun PomodoroScreen(viewModel: PomodoroViewModel = viewModel()) {
                 is PomodoroState.LongBreak -> "Long Break"
             },
             fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -54,12 +54,15 @@ fun PomodoroScreen(viewModel: PomodoroViewModel = viewModel()) {
                 else -> timeLeft.toFloat() / viewModel.getTotalTime().toFloat()
             },
             timeText = formatTime(timeLeft),
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.CenterHorizontally)
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         Row(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Button(
