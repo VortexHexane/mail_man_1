@@ -11,6 +11,6 @@ data class KanbanCard(
 enum class KanbanSection {
     TODO,
     DOING,
-    COMPLETING,
+    CHECK,
     DONE
 } 
