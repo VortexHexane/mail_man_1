@@ -18,6 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavOptions
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.vortex.mail_man_1.navigation.NavDestination
 import com.vortex.mail_man_1.screens.*
 import com.vortex.mail_man_1.ui.theme.Mail_man_1Theme
@@ -25,90 +26,98 @@ import com.vortex.mail_man_1.viewmodel.AuthState
 import com.vortex.mail_man_1.viewmodel.AuthViewModel
 import com.vortex.mail_man_1.components.BottomNavBar
 import kotlinx.coroutines.launch
+import com.vortex.mail_man_1.viewmodel.NotesViewModel
 
+/**
+ * Main activity class that handles the app's entry point and authentication flow
+ */
 class MainActivity : ComponentActivity() {
-    private val viewModel: AuthViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
+    private val notesViewModel: NotesViewModel by viewModels()
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialize Google Sign-In launcher
         googleSignInLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             lifecycleScope.launch {
-                viewModel.handleGoogleSignInResult(result.data)
+                authViewModel.handleGoogleSignInResult(result.data)
             }
         }
 
         setContent {
             Mail_man_1Theme {
-                val authState by viewModel.authState.collectAsState()
+                val authState by authViewModel.authState.collectAsState()
                 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen(authState)
-                }
-            }
-        }
-    }
+                    when (authState) {
+                        is AuthState.Success -> {
+                            val navController = rememberNavController()
+                            
+                            // Add state tracking for current route
+                            val currentRoute by navController.currentBackStackEntryAsState()
+                            println("Current BackStack Route: ${currentRoute?.destination?.route}") // Debug log
 
-    @Composable
-    fun MainScreen(authState: AuthState) {
-        when (authState) {
-            is AuthState.Success -> {
-                val navController = rememberNavController()
-                Scaffold(
-                    bottomBar = {
-                        BottomNavBar(
-                            currentRoute = navController.currentDestination?.route ?: NavDestination.Home.route,
-                            onNavigate = { destination ->
-                                navController.navigate(destination.route) {
-                                    popUpTo(NavDestination.Home.route) {
-                                        saveState = true
+                            Scaffold(
+                                bottomBar = {
+                                    BottomNavBar(
+                                        currentRoute = currentRoute?.destination?.route 
+                                            ?: NavDestination.Home.route,
+                                        onNavigate = { destination ->
+                                            println("Navigating to: ${destination.route}") // Debug log
+                                            navController.navigate(destination.route) {
+                                                popUpTo(NavDestination.Home.route) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
+                                        }
+                                    )
+                                }
+                            ) { paddingValues ->
+                                NavHost(
+                                    navController = navController,
+                                    startDestination = NavDestination.Home.route,
+                                    modifier = Modifier.padding(paddingValues)
+                                ) {
+                                    composable(NavDestination.Home.route) { HomeScreen() }
+                                    composable(NavDestination.Pomodoro.route) { PomodoroScreen() }
+                                    composable(NavDestination.CreateNote.route) { 
+                                        CreateNoteScreen(
+                                            onNavigateBack = { navController.popBackStack() },
+                                            viewModel = notesViewModel
+                                        )
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
+                                    composable(NavDestination.KanbanBoard.route) { KanbanBoardScreen() }
+                                    composable(NavDestination.Settings.route) { 
+                                        SettingsScreen(
+                                            onNavigateBack = { navController.popBackStack() },
+                                            onSignOut = { authViewModel.signOut(this@MainActivity) }
+                                        )
+                                    }
                                 }
                             }
-                        )
+                        }
+                        else -> {
+                            AuthScreen(
+                                authState = authState,
+                                onSignInClick = { 
+                                    val signInIntent = authViewModel.getGoogleSignInClient(this).signInIntent
+                                    googleSignInLauncher.launch(signInIntent)
+                                },
+                                onSignOutClick = {
+                                    authViewModel.signOut(this)
+                                }
+                            )
+                        }
                     }
-                ) { paddingValues ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = NavDestination.Home.route,
-                        modifier = Modifier.padding(paddingValues)
-                    ) {
-                        composable(NavDestination.Home.route) { HomeScreen() }
-                        composable(NavDestination.Pomodoro.route) { PomodoroScreen() }
-                        composable(NavDestination.CreateNote.route) { CreateNoteScreen() }
-                        composable(NavDestination.KanbanBoard.route) { KanbanBoardScreen() }
-                        composable(NavDestination.Settings.route) { SettingsScreen() }
-                    }
-                }
-            }
-            is AuthState.Initial -> {
-                AuthScreen(
-                    authState = authState,
-                    onSignInClick = { 
-                        val signInIntent = viewModel.getGoogleSignInClient(this).signInIntent
-                        googleSignInLauncher.launch(signInIntent)
-                    },
-                    onSignOutClick = {
-                        viewModel.signOut(this)
-                    }
-                )
-            }
-            is AuthState.Error -> {
-                Text("Error: ${authState.message}")
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { 
-                    val signInIntent = viewModel.getGoogleSignInClient(this).signInIntent
-                    googleSignInLauncher.launch(signInIntent)
-                }) {
-                    Text("Retry")
                 }
             }
         }

@@ -9,6 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.vortex.mail_man_1.components.TimerCircle
 import com.vortex.mail_man_1.viewmodel.PomodoroState
 import com.vortex.mail_man_1.viewmodel.PomodoroViewModel
 
@@ -22,8 +23,18 @@ fun PomodoroScreen(viewModel: PomodoroViewModel = viewModel()) {
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
+        Text(
+            text = "Pomodoro Timer",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Start
+        )
+
         Text(
             text = when (timerState) {
                 is PomodoroState.Initial -> "Ready to Start"
@@ -37,10 +48,13 @@ fun PomodoroScreen(viewModel: PomodoroViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text(
-            text = formatTime(timeLeft),
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold
+        TimerCircle(
+            progress = when (timerState) {
+                is PomodoroState.Initial -> 1f
+                else -> timeLeft.toFloat() / viewModel.getTotalTime().toFloat()
+            },
+            timeText = formatTime(timeLeft),
+            modifier = Modifier.padding(16.dp)
         )
 
         Spacer(modifier = Modifier.height(32.dp))

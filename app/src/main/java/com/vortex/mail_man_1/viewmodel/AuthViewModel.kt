@@ -12,6 +12,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 class AuthViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
@@ -19,11 +20,10 @@ class AuthViewModel : ViewModel() {
     val authState = _authState.asStateFlow()
 
     fun getGoogleSignInClient(context: Context): GoogleSignInClient {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        return GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("8899461087-03qlg6keejhtfeig8jmk3fcdo7bssior.apps.googleusercontent.com")
             .requestEmail()
-            .build()
-        return GoogleSignIn.getClient(context, gso)
+            .build())
     }
 
     suspend fun handleGoogleSignInResult(intent: Intent?) {

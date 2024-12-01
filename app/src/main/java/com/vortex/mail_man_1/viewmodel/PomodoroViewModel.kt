@@ -80,6 +80,15 @@ class PomodoroViewModel : ViewModel() {
         super.onCleared()
         timer?.cancel()
     }
+
+    fun getTotalTime(): Long {
+        return when (timerState.value) {
+            is PomodoroState.Work -> WORK_TIME
+            is PomodoroState.ShortBreak -> SHORT_BREAK
+            is PomodoroState.LongBreak -> LONG_BREAK
+            is PomodoroState.Initial -> WORK_TIME
+        }
+    }
 }
 
 sealed class PomodoroState {

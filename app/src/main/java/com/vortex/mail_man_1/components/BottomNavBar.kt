@@ -12,35 +12,37 @@ fun BottomNavBar(
     onNavigate: (NavDestination) -> Unit
 ) {
     NavigationBar {
-        NavigationBarItem(
-            selected = currentRoute == NavDestination.Home.route,
-            onClick = { onNavigate(NavDestination.Home) },
-            icon = { Icon(painter = painterResource(R.drawable.ic_home), contentDescription = "Home") },
-            label = { Text("Home") }
+        val items = listOf(
+            NavDestination.Home,
+            NavDestination.Pomodoro,
+            NavDestination.CreateNote,
+            NavDestination.KanbanBoard,
+            NavDestination.Settings
         )
-        NavigationBarItem(
-            selected = currentRoute == NavDestination.Pomodoro.route,
-            onClick = { onNavigate(NavDestination.Pomodoro) },
-            icon = { Icon(painter = painterResource(R.drawable.ic_timer), contentDescription = "Pomodoro") },
-            label = { Text("Pomodoro") }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { onNavigate(NavDestination.CreateNote) },
-            icon = { Icon(painter = painterResource(R.drawable.ic_add), contentDescription = "Create") },
-            label = { Text("Create") }
-        )
-        NavigationBarItem(
-            selected = currentRoute == NavDestination.KanbanBoard.route,
-            onClick = { onNavigate(NavDestination.KanbanBoard) },
-            icon = { Icon(painter = painterResource(R.drawable.ic_kanban), contentDescription = "Kanban") },
-            label = { Text("Kanban") }
-        )
-        NavigationBarItem(
-            selected = currentRoute == NavDestination.Settings.route,
-            onClick = { onNavigate(NavDestination.Settings) },
-            icon = { Icon(painter = painterResource(R.drawable.ic_settings), contentDescription = "Settings") },
-            label = { Text("Settings") }
-        )
+        
+        items.forEach { destination ->
+            NavigationBarItem(
+                selected = currentRoute.startsWith(destination.route),
+                onClick = { onNavigate(destination) },
+                icon = {
+                    when (destination) {
+                        NavDestination.Home -> Icon(painter = painterResource(R.drawable.ic_home), "Home")
+                        NavDestination.Pomodoro -> Icon(painter = painterResource(R.drawable.ic_timer), "Pomodoro")
+                        NavDestination.CreateNote -> Icon(painter = painterResource(R.drawable.ic_add), "Create")
+                        NavDestination.KanbanBoard -> Icon(painter = painterResource(R.drawable.ic_kanban), "Kanban")
+                        NavDestination.Settings -> Icon(painter = painterResource(R.drawable.ic_settings), "Settings")
+                        NavDestination.Auth -> TODO()
+                        NavDestination.Notes -> TODO()
+                    }
+                },
+                label = { 
+                    Text(when (destination) {
+                        NavDestination.CreateNote -> "Create"
+                        else -> destination.route.replaceFirstChar { it.uppercase() }
+                    })
+                },
+                alwaysShowLabel = true
+            )
+        }
     }
 } 
