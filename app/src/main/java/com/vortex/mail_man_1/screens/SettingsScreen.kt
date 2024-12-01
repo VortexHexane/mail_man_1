@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.vortex.mail_man_1.components.TopBar
 
 /**
  * Settings screen that displays user preferences and logout option
@@ -17,9 +18,13 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit
 ) {
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopBar(title = "Settings")
+        
         Column(
-            modifier = Modifier.padding(all = 16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Settings Screen")

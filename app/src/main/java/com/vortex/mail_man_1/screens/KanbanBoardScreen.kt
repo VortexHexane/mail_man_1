@@ -34,84 +34,84 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.vortex.mail_man_1.components.TopBar
 
 @Composable
 fun KanbanBoardScreen(viewModel: KanbanViewModel = viewModel()) {
-    val cards by viewModel.cards.collectAsState()
-    val selectedSection by viewModel.selectedSection.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
-    var newCardText by remember { mutableStateOf("") }
-
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            text = "Kanban Board",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        TopBar(title = "Kanban Board")
+        
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            val cards by viewModel.cards.collectAsState()
+            val selectedSection by viewModel.selectedSection.collectAsState()
+            val errorMessage by viewModel.errorMessage.collectAsState()
+            var newCardText by remember { mutableStateOf("") }
 
-        // Section Switch
-        KanbanSectionSwitch(
-            selectedSection = selectedSection,
-            onSectionSelected = { viewModel.selectSection(it) }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Add new card section
-        OutlinedTextField(
-            value = newCardText,
-            onValueChange = { newCardText = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("New Task") },
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        if (newCardText.isNotBlank()) {
-                            viewModel.addCard(newCardText)
-                            newCardText = ""
-                        }
-                    }
-                ) {
-                    Icon(Icons.Default.Add, "Add Task")
-                }
-            }
-        )
-
-        if (errorMessage != null) {
-            Text(
-                text = errorMessage!!,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(vertical = 8.dp)
+            // Section Switch
+            KanbanSectionSwitch(
+                selectedSection = selectedSection,
+                onSectionSelected = { viewModel.selectSection(it) }
             )
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // Cards list with animation
-        AnimatedContent(
-            targetState = selectedSection,
-            transitionSpec = {
-                slideInHorizontally(
-                    initialOffsetX = { if (targetState.ordinal > initialState.ordinal) it else -it }
-                ) togetherWith slideOutHorizontally(
-                    targetOffsetX = { if (targetState.ordinal > initialState.ordinal) -it else it }
+            // Add new card section
+            OutlinedTextField(
+                value = newCardText,
+                onValueChange = { newCardText = it },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("New Task") },
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            if (newCardText.isNotBlank()) {
+                                viewModel.addCard(newCardText)
+                                newCardText = ""
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.Add, "Add Task")
+                    }
+                }
+            )
+
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-        ) { section ->
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(cards.filter { it.section == section }) { card ->
-                    KanbanCard(
-                        card = card,
-                        onMove = { newSection -> viewModel.moveCard(card, newSection) }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Cards list with animation
+            AnimatedContent(
+                targetState = selectedSection,
+                transitionSpec = {
+                    slideInHorizontally(
+                        initialOffsetX = { if (targetState.ordinal > initialState.ordinal) it else -it }
+                    ) togetherWith slideOutHorizontally(
+                        targetOffsetX = { if (targetState.ordinal > initialState.ordinal) -it else it }
                     )
+                }
+            ) { section ->
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(cards.filter { it.section == section }) { card ->
+                        KanbanCard(
+                            card = card,
+                            onMove = { newSection -> viewModel.moveCard(card, newSection) }
+                        )
+                    }
                 }
             }
         }
