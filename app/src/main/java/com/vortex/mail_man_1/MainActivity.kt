@@ -109,6 +109,7 @@ class MainActivity : ComponentActivity() {
                             AuthScreen(
                                 authState = authState,
                                 onSignInClick = { 
+                                    authViewModel.startSignIn()  // Start loading before launching intent
                                     val signInIntent = authViewModel.getGoogleSignInClient(this).signInIntent
                                     googleSignInLauncher.launch(signInIntent)
                                 },
