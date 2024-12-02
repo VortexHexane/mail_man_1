@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 // App Theme Colors
 val Black = Color(0xFF000000)
-val EmeraldGreen = Color(0xFF7DCD85)
-val MintGreen = Color(0xFFE4FDE1)
+val BlueGray = Color(0xFFC5DAE7)
+val LightBlueGray = Color(0xFFE2EDF3)
 val White = Color(0xFFFFFFFF)
-val Charcoal = Color(0xFF36454F)
+val DarkBlue = Color(0xFF12212B)

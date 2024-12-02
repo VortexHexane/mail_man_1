@@ -16,19 +16,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 
 private val DarkColorScheme = darkColorScheme(
-    primary = EmeraldGreen,
+    primary = BlueGray,
     onPrimary = Black,
-    primaryContainer = Charcoal,
-    onPrimaryContainer = MintGreen,
+    primaryContainer = DarkBlue,
+    onPrimaryContainer = LightBlueGray,
     
-    secondary = MintGreen,
+    secondary = LightBlueGray,
     onSecondary = Black,
-    secondaryContainer = Charcoal,
-    onSecondaryContainer = MintGreen,
+    secondaryContainer = DarkBlue,
+    onSecondaryContainer = LightBlueGray,
     
     tertiary = White,
     onTertiary = Black,
-    tertiaryContainer = Charcoal,
+    tertiaryContainer = DarkBlue,
     onTertiaryContainer = White,
     
     background = Black,
@@ -36,13 +36,13 @@ private val DarkColorScheme = darkColorScheme(
     
     surface = Black,
     onSurface = White,
-    surfaceVariant = Charcoal,
+    surfaceVariant = DarkBlue,
     onSurfaceVariant = White,
     
     error = Color(0xFFFF5252),
     onError = Black,
     
-    outline = EmeraldGreen
+    outline = BlueGray
 )
 
 // We'll keep the light scheme but make it similar to dark for consistency
