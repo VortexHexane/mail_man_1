@@ -27,6 +27,7 @@ class AuthViewModel : ViewModel() {
 
     suspend fun handleGoogleSignInResult(intent: Intent?) {
         try {
+            _authState.value = AuthState.Loading
             val account = GoogleSignIn.getSignedInAccountFromIntent(intent).await()
             val credential = GoogleAuthProvider.getCredential(account.idToken, null)
             auth.signInWithCredential(credential).await()

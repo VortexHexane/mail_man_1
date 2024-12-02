@@ -109,7 +109,8 @@ fun KanbanBoardScreen(viewModel: KanbanViewModel = viewModel()) {
                     items(cards.filter { it.section == section }) { card ->
                         KanbanCard(
                             card = card,
-                            onMove = { newSection -> viewModel.moveCard(card, newSection) }
+                            onMove = { newSection -> viewModel.moveCard(card, newSection) },
+                            onDelete = { viewModel.deleteCard(card) }
                         )
                     }
                 }
@@ -203,28 +204,88 @@ private fun KanbanSectionSwitch(
 @Composable
 private fun KanbanCard(
     card: KanbanCard,
-    onMove: (KanbanSection) -> Unit
+    onMove: (KanbanSection) -> Unit,
+    onDelete: () -> Unit = {}
 ) {
+    var showDropdown by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Confirm Delete") },
+            text = { Text("Are you sure you want to delete this task?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDelete()
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(card.text)
-            Spacer(modifier = Modifier.height(8.dp))
+            // Task text
+            Text(
+                text = card.text,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Bottom row with Move To and Delete buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                KanbanSection.values().forEach { section ->
-                    if (section != card.section && section != KanbanSection.TODO) {
-                        TextButton(
-                            onClick = { onMove(section) }
-                        ) {
-                            Text("Move to ${section.name}")
+                // Move To button with dropdown
+                Box {
+                    TextButton(onClick = { showDropdown = true }) {
+                        Text("Move to")
+                    }
+                    
+                    DropdownMenu(
+                        expanded = showDropdown,
+                        onDismissRequest = { showDropdown = false }
+                    ) {
+                        KanbanSection.values().forEach { section ->
+                            if (section != card.section) {
+                                DropdownMenuItem(
+                                    text = { Text("Move to ${section.name}") },
+                                    onClick = {
+                                        onMove(section)
+                                        showDropdown = false
+                                    }
+                                )
+                            }
                         }
                     }
+                }
+                
+                // Delete button
+                TextButton(
+                    onClick = { showDeleteDialog = true },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Delete")
                 }
             }
         }

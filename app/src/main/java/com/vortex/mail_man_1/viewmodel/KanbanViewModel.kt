@@ -41,4 +41,8 @@ class KanbanViewModel : ViewModel() {
     fun clearError() {
         _errorMessage.value = null
     }
+
+    fun deleteCard(card: KanbanCard) {
+        _cards.value = _cards.value.filter { it != card }
+    }
 } 
