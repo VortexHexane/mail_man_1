@@ -18,6 +18,10 @@ class AuthViewModel : ViewModel() {
     private val _authState = MutableStateFlow<AuthState>(AuthState.Initial)
     val authState = _authState.asStateFlow()
 
+    fun continueAsGuest() {
+        _authState.value = AuthState.Success(null)
+    }
+
     fun getGoogleSignInClient(context: Context): GoogleSignInClient {
         return GoogleSignIn.getClient(context, GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken("8899461087-03qlg6keejhtfeig8jmk3fcdo7bssior.apps.googleusercontent.com")

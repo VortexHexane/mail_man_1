@@ -21,6 +21,7 @@ fun AppNavigation(
     authState: AuthState,
     onSignInClick: () -> Unit,
     onSignOutClick: () -> Unit,
+    onGuestClick: () -> Unit,
     notesViewModel: NotesViewModel
 ) {
     val navController = rememberNavController()
@@ -55,7 +56,8 @@ fun AppNavigation(
                 AuthScreen(
                     authState = authState,
                     onSignInClick = onSignInClick,
-                    onSignOutClick = onSignOutClick
+                    onSignOutClick = onSignOutClick,
+                    onGuestClick = onGuestClick
                 )
             }
             

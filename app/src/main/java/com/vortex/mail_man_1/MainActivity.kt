@@ -109,60 +109,18 @@ class MainActivity : ComponentActivity() {
                             AuthScreen(
                                 authState = authState,
                                 onSignInClick = { 
-                                    authViewModel.startSignIn()  // Start loading before launching intent
+                                    authViewModel.startSignIn() 
                                     val signInIntent = authViewModel.getGoogleSignInClient(this).signInIntent
                                     googleSignInLauncher.launch(signInIntent)
                                 },
                                 onSignOutClick = {
                                     authViewModel.signOut(this)
+                                },
+                                onGuestClick = {
+                                    authViewModel.continueAsGuest()
                                 }
                             )
                         }
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    fun AuthScreen(
-        authState: AuthState,
-        onSignInClick: () -> Unit,
-        onSignOutClick: () -> Unit
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            when (authState) {
-                is AuthState.Initial -> {
-                    Button(onClick = onSignInClick) {
-                        Text("Sign in with Google")
-                    }
-                }
-                is AuthState.Success -> {
-                    Text("Welcome ${authState.user?.displayName ?: "User"}")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onSignOutClick) {
-                        Text("Sign Out")
-                    }
-                }
-                is AuthState.Error -> {
-                    Text("Error: ${authState.message}")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onSignInClick) {
-                        Text("Retry")
-                    }
-                }
-                AuthState.Loading -> {
-                    CircularProgressIndicator()
-                }
-                AuthState.Unauthenticated -> {
-                    Button(onClick = onSignInClick) {
-                        Text("Sign in with Google")
                     }
                 }
             }
