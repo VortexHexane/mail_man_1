@@ -91,7 +91,7 @@ fun AuthScreen(
                             onClick = onSignInClick,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Sign in with Google")
+                            Text("Sign in with Google", style = MaterialTheme.typography.labelLarge)
                         }
                     }
                 }

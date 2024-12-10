@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.asStateFlow
 class PomodoroViewModel : ViewModel() {
     companion object {
         const val WORK_TIME = 25 * 60 * 1000L      // 25 minutes
-        const val SHORT_BREAK = 10 * 60 * 1000L    // 10 minutes
-        const val LONG_BREAK = 30 * 60 * 1000L     // 30 minutes
+        const val SHORT_BREAK = 5 * 60 * 1000L    // 5 minutes
+        const val LONG_BREAK = 20 * 60 * 1000L     // 20 minutes
         const val POMODORO_CYCLES = 4              // Number of work sessions before long break
     }
 
@@ -25,9 +25,14 @@ class PomodoroViewModel : ViewModel() {
     private val _completedPomodori = MutableStateFlow(0)
     val completedPomodori = _completedPomodori.asStateFlow()
 
+    private val _isTimerRunning = MutableStateFlow(false)
+    val isTimerRunning = _isTimerRunning.asStateFlow()
+
     fun startTimer() {
         if (timer != null) return
 
+        _isTimerRunning.value = true
+        
         val duration = when (_timerState.value) {
             is PomodoroState.Initial, is PomodoroState.Work -> WORK_TIME
             is PomodoroState.ShortBreak -> SHORT_BREAK
@@ -40,22 +45,20 @@ class PomodoroViewModel : ViewModel() {
             }
 
             override fun onFinish() {
+                _isTimerRunning.value = false  // Reset timer running state
                 when (_timerState.value) {
                     is PomodoroState.Initial, is PomodoroState.Work -> {
                         _completedPomodori.value++
                         currentCycle++
                         if (currentCycle % POMODORO_CYCLES == 0) {
-                            // After 4 pomodori, take a long break
                             _timerState.value = PomodoroState.LongBreak
                             _timeLeft.value = LONG_BREAK
                         } else {
-                            // After each pomodoro, take a short break
                             _timerState.value = PomodoroState.ShortBreak
                             _timeLeft.value = SHORT_BREAK
                         }
                     }
                     is PomodoroState.ShortBreak, is PomodoroState.LongBreak -> {
-                        // After any break, start a new work session
                         _timerState.value = PomodoroState.Work
                         _timeLeft.value = WORK_TIME
                     }
@@ -64,7 +67,6 @@ class PomodoroViewModel : ViewModel() {
             }
         }.start()
 
-        // Update state when starting timer
         _timerState.value = when (_timerState.value) {
             is PomodoroState.Initial -> PomodoroState.Work
             else -> _timerState.value
@@ -74,6 +76,7 @@ class PomodoroViewModel : ViewModel() {
     fun pauseTimer() {
         timer?.cancel()
         timer = null
+        _isTimerRunning.value = false
     }
 
     fun resetTimer() {
@@ -83,6 +86,7 @@ class PomodoroViewModel : ViewModel() {
         _completedPomodori.value = 0
         _timerState.value = PomodoroState.Initial
         _timeLeft.value = WORK_TIME
+        _isTimerRunning.value = false
     }
 
     override fun onCleared() {
