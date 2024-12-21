@@ -28,24 +28,42 @@ class PomodoroViewModel : ViewModel() {
     private val _isTimerRunning = MutableStateFlow(false)
     val isTimerRunning = _isTimerRunning.asStateFlow()
 
+    private val _isPaused = MutableStateFlow(false)
+    val isPaused = _isPaused.asStateFlow()
+
+    private var pausedTimeLeft: Long = 0  // Store the exact time when paused
+    private var lastTimerState: PomodoroState = PomodoroState.Initial  // Store the state when paused
+
     fun startTimer() {
         if (timer != null) return
 
         _isTimerRunning.value = true
         
-        val duration = when (_timerState.value) {
-            is PomodoroState.Initial, is PomodoroState.Work -> WORK_TIME
-            is PomodoroState.ShortBreak -> SHORT_BREAK
-            is PomodoroState.LongBreak -> LONG_BREAK
+        val duration = if (_isPaused.value && pausedTimeLeft > 0) {
+            // Resume from paused time
+            _timerState.value = lastTimerState  // Restore the state
+            pausedTimeLeft
+        } else {
+            // Start fresh timer
+            _isPaused.value = false
+            when (_timerState.value) {
+                is PomodoroState.Initial, is PomodoroState.Work -> WORK_TIME
+                is PomodoroState.ShortBreak -> SHORT_BREAK
+                is PomodoroState.LongBreak -> LONG_BREAK
+            }
         }
 
         timer = object : CountDownTimer(duration, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 _timeLeft.value = millisUntilFinished
+                pausedTimeLeft = millisUntilFinished  // Update pausedTimeLeft continuously
             }
 
             override fun onFinish() {
-                _isTimerRunning.value = false  // Reset timer running state
+                _isTimerRunning.value = false
+                _isPaused.value = false
+                pausedTimeLeft = 0  // Reset paused time
+                
                 when (_timerState.value) {
                     is PomodoroState.Initial, is PomodoroState.Work -> {
                         _completedPomodori.value++
@@ -67,9 +85,11 @@ class PomodoroViewModel : ViewModel() {
             }
         }.start()
 
-        _timerState.value = when (_timerState.value) {
-            is PomodoroState.Initial -> PomodoroState.Work
-            else -> _timerState.value
+        if (!_isPaused.value) {  // Only update state if not resuming from pause
+            _timerState.value = when (_timerState.value) {
+                is PomodoroState.Initial -> PomodoroState.Work
+                else -> _timerState.value
+            }
         }
     }
 
@@ -77,6 +97,9 @@ class PomodoroViewModel : ViewModel() {
         timer?.cancel()
         timer = null
         _isTimerRunning.value = false
+        _isPaused.value = true
+        pausedTimeLeft = _timeLeft.value  // Store the exact time left
+        lastTimerState = _timerState.value  // Store the current state
     }
 
     fun resetTimer() {
@@ -87,6 +110,9 @@ class PomodoroViewModel : ViewModel() {
         _timerState.value = PomodoroState.Initial
         _timeLeft.value = WORK_TIME
         _isTimerRunning.value = false
+        _isPaused.value = false
+        pausedTimeLeft = 0  // Reset paused time
+        lastTimerState = PomodoroState.Initial  // Reset stored state
     }
 
     override fun onCleared() {

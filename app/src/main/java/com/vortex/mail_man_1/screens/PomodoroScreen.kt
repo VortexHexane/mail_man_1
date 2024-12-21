@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vortex.mail_man_1.components.TimerCircle
 import com.vortex.mail_man_1.components.TopBar
@@ -26,6 +25,7 @@ fun PomodoroScreen(viewModel: PomodoroViewModel = viewModel()) {
     val timerState by viewModel.timerState.collectAsState()
     val timeLeft by viewModel.timeLeft.collectAsState()
     val isTimerRunning by viewModel.isTimerRunning.collectAsState()
+    val isPaused by viewModel.isPaused.collectAsState()
 
     val backgroundColor = when (timerState) {
         is PomodoroState.Work -> PomodoroWorkGreen
@@ -106,7 +106,11 @@ fun PomodoroScreen(viewModel: PomodoroViewModel = viewModel()) {
                         )
                     ) {
                         Text(
-                            text = if (!isTimerRunning) "Start" else "Pause",
+                            text = when {
+                                isTimerRunning -> "Pause"
+                                isPaused -> "Continue"
+                                else -> "Start"
+                            },
                             style = MaterialTheme.typography.labelLarge.copy(
                                 fontWeight = FontWeight.Normal
                             )
@@ -128,6 +132,19 @@ fun PomodoroScreen(viewModel: PomodoroViewModel = viewModel()) {
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Cycle: ${viewModel.getCurrentCycle() + 1}/${PomodoroViewModel.POMODORO_CYCLES}",
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontFamily = Raleway,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = contentColor,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
             }
         }
     }
