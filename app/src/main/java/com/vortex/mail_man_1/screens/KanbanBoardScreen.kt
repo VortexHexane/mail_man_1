@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.vortex.mail_man_1.components.TopBar
+import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
 fun KanbanBoardScreen(viewModel: KanbanViewModel = viewModel()) {
@@ -40,7 +41,7 @@ fun KanbanBoardScreen(viewModel: KanbanViewModel = viewModel()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(0.dp)
         ) {
             val cards by viewModel.cards.collectAsState()
             val selectedSection by viewModel.selectedSection.collectAsState()
@@ -118,14 +119,15 @@ private fun KanbanSectionSwitch(
     selectedSection: KanbanSection,
     onSectionSelected: (KanbanSection) -> Unit
 ) {
-    val sections = KanbanSection.values()
+    val sections = KanbanSection.entries.toTypedArray()
     val selectedIndex = sections.indexOf(selectedSection)
+    val screenWidth = LocalConfiguration.current.screenWidthDp
+    val sectionWidth = screenWidth / sections.size
     
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(48.dp)
-            .padding(horizontal = 16.dp)
             .background(
                 MaterialTheme.colorScheme.surfaceVariant,
                 RoundedCornerShape(24.dp)
@@ -146,9 +148,9 @@ private fun KanbanSectionSwitch(
         Box(
             modifier = Modifier
                 .fillMaxHeight()
-                .fillMaxWidth(1f / sections.size)
+                .width(sectionWidth.dp)
                 .padding(4.dp)
-                .offset(x = (selectedIndex * (1f / sections.size) * 100).dp)
+                .offset(x = (sectionWidth * selectedIndex).dp)
                 .background(
                     MaterialTheme.colorScheme.primary,
                     RoundedCornerShape(20.dp)
@@ -177,10 +179,7 @@ private fun KanbanSectionSwitch(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = when (section) {
-                            KanbanSection.CHECK -> "Check"
-                            else -> section.name
-                        },
+                        text = section.name,
                         color = if (isSelected)
                             MaterialTheme.colorScheme.onPrimary
                         else
@@ -258,7 +257,7 @@ private fun KanbanCard(
                         expanded = showDropdown,
                         onDismissRequest = { showDropdown = false }
                     ) {
-                        KanbanSection.values().forEach { section ->
+                        KanbanSection.entries.forEach { section ->
                             if (section != card.section) {
                                 DropdownMenuItem(
                                     text = { Text("Move to ${section.name}") },
