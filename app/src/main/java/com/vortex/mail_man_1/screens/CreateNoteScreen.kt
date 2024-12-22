@@ -39,6 +39,7 @@ fun CreateNoteScreen(
     var noteContent by remember { mutableStateOf("") }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var noteType by remember { mutableStateOf("") }
+    var currentNoteId by remember { mutableStateOf<String?>(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -74,7 +75,7 @@ fun CreateNoteScreen(
                                         .fillMaxWidth()
                                         .border(
                                             width = 1.dp,
-                                            color = Color(0xFFC5DAE7),
+                                            color = Color(0xFF64B5F6),
                                             shape = MaterialTheme.shapes.medium
                                         )
                                         .clickable { 
@@ -93,6 +94,7 @@ fun CreateNoteScreen(
                                                     noteContent = ""
                                                 }
                                             }
+                                            currentNoteId = note.id
                                             showInputCard = true
                                         },
                                     colors = CardDefaults.cardColors(
@@ -150,17 +152,21 @@ fun CreateNoteScreen(
                                     Button(
                                         onClick = {
                                             if (noteTitle.isNotBlank()) {
-                                                when (noteType) {
-                                                    "note" -> viewModel.addTextNote(noteTitle, noteContent)
-                                                    "checklist" -> {
-                                                        // Handle checklist save
-                                                        val items = noteContent.split("\n").filter { it.isNotBlank() }
-                                                        viewModel.addChecklistNote(noteTitle, items)
+                                                if (currentNoteId != null) {
+                                                    viewModel.updateNote(currentNoteId!!, noteTitle, noteContent)
+                                                } else {
+                                                    when (noteType) {
+                                                        "note" -> viewModel.addTextNote(noteTitle, noteContent)
+                                                        "checklist" -> {
+                                                            val items = noteContent.split("\n").filter { it.isNotBlank() }
+                                                            viewModel.addChecklistNote(noteTitle, items)
+                                                        }
                                                     }
                                                 }
                                                 noteTitle = ""
                                                 noteContent = ""
                                                 showInputCard = false
+                                                currentNoteId = null
                                             }
                                         },
                                         enabled = noteTitle.isNotBlank()
@@ -180,13 +186,14 @@ fun CreateNoteScreen(
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },
                 title = { Text("Confirm Delete") },
-                text = { Text("Are you sure you want to discard this note?") },
+                text = { Text("Are you sure you want to delete this note?") },
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            noteTitle = ""
-                            noteContent = ""
-                            showInputCard = false
+                            if (currentNoteId != null) {
+                                viewModel.deleteNote(currentNoteId!!)
+                                currentNoteId = null
+                            }
                             showDeleteDialog = false
                         }
                     ) {

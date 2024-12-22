@@ -45,4 +45,21 @@ class NotesViewModel : ViewModel() {
     fun deleteNote(noteId: String) {
         _notes.value = _notes.value.filter { it.id != noteId }
     }
+
+    /**
+     * Updates an existing note by its ID
+     */
+    fun updateNote(noteId: String, title: String, content: String) {
+        _notes.value = _notes.value.map { note ->
+            if (note.id == noteId) {
+                when (note) {
+                    is TextNote -> note.copy(title = title, content = content, timestamp = System.currentTimeMillis())
+                    // Handle other note types if necessary
+                    else -> note
+                }
+            } else {
+                note
+            }
+        }
+    }
 } 
