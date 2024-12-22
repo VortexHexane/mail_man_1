@@ -1,6 +1,8 @@
 package com.vortex.mail_man_1.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,12 +20,29 @@ fun CreateNoteScreen(
     onNavigateBack: () -> Unit,
     viewModel: NotesViewModel
 ) {
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.padding(all = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+    Box(modifier = Modifier.fillMaxSize()) {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.padding(all = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Create Note Screen")
+            }
+        }
+
+        // Floating Action Button
+        FloatingActionButton(
+            onClick = { /* TODO: Add action */ },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(all = 10.dp),
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
         ) {
-            Text("Create Note Screen")
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add"
+            )
         }
     }
 } 
