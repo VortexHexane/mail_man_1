@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,6 +21,8 @@ fun CreateNoteScreen(
     onNavigateBack: () -> Unit,
     viewModel: NotesViewModel
 ) {
+    val notes = viewModel.notes.collectAsState(initial = emptyList()).value
+
     Box(modifier = Modifier.fillMaxSize()) {
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -28,13 +30,19 @@ fun CreateNoteScreen(
             ) {
                 TopBar(title = "Notes")
                 
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Create Note Screen")
+                    if (notes.isEmpty()) {
+                        Text(
+                            text = "Press \"+\" button to add a note",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             }
         }
