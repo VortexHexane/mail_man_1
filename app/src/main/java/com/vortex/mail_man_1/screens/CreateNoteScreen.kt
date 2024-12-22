@@ -1,5 +1,6 @@
 package com.vortex.mail_man_1.screens
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,10 +17,10 @@ import com.vortex.mail_man_1.model.Note
 import com.vortex.mail_man_1.model.TextNote
 import com.vortex.mail_man_1.model.ChecklistNote
 import com.vortex.mail_man_1.model.CanvasNote
-import com.vortex.mail_man_1.model.ImageNote
 import com.vortex.mail_man_1.viewmodel.NotesViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.graphics.Color
 
 /**
  * Screen for creating new notes
@@ -33,9 +34,11 @@ fun CreateNoteScreen(
 ) {
     val notes = viewModel.notes.collectAsState(initial = emptyList()).value
     var showInputCard by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
     var noteTitle by remember { mutableStateOf("") }
     var noteContent by remember { mutableStateOf("") }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var noteType by remember { mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -66,10 +69,41 @@ fun CreateNoteScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(notes) { note ->
-                                NoteCard(
-                                    note = note,
-                                    onDelete = { viewModel.deleteNote(note.id) }
-                                )
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .border(
+                                            width = 1.dp,
+                                            color = Color(0xFFC5DAE7),
+                                            shape = MaterialTheme.shapes.medium
+                                        )
+                                        .clickable { 
+                                            noteTitle = note.title
+                                            when (note) {
+                                                is TextNote -> {
+                                                    noteType = "note"
+                                                    noteContent = note.content
+                                                }
+                                                is ChecklistNote -> {
+                                                    noteType = "checklist"
+                                                    // Handle checklist content if needed
+                                                }
+                                                else -> {
+                                                    noteType = "note"
+                                                    noteContent = ""
+                                                }
+                                            }
+                                            showInputCard = true
+                                        },
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color.Black
+                                    )
+                                ) {
+                                    NoteCard(
+                                        note = note,
+                                        onDelete = { viewModel.deleteNote(note.id) }
+                                    )
+                                }
                             }
                         }
                     }
@@ -116,7 +150,14 @@ fun CreateNoteScreen(
                                     Button(
                                         onClick = {
                                             if (noteTitle.isNotBlank()) {
-                                                viewModel.addTextNote(noteTitle, noteContent)
+                                                when (noteType) {
+                                                    "note" -> viewModel.addTextNote(noteTitle, noteContent)
+                                                    "checklist" -> {
+                                                        // Handle checklist save
+                                                        val items = noteContent.split("\n").filter { it.isNotBlank() }
+                                                        viewModel.addChecklistNote(noteTitle, items)
+                                                    }
+                                                }
                                                 noteTitle = ""
                                                 noteContent = ""
                                                 showInputCard = false
@@ -160,19 +201,44 @@ fun CreateNoteScreen(
             )
         }
 
-        // Floating Action Button
-        FloatingActionButton(
-            onClick = { showInputCard = true },
+        // Floating Action Button with Dropdown Menu
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(all = 16.dp),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
+                .padding(16.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add Note"
-            )
+            FloatingActionButton(
+                onClick = { showMenu = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Note"
+                )
+            }
+
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Note") },
+                    onClick = {
+                        noteType = "note"
+                        showInputCard = true
+                        showMenu = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Checklist") },
+                    onClick = {
+                        noteType = "checklist"
+                        showInputCard = true
+                        showMenu = false
+                    }
+                )
+            }
         }
     }
 }
@@ -186,41 +252,36 @@ private fun NoteCard(
     var showViewCard by remember { mutableStateOf(false) }
     val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()) }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { showViewCard = true }
+    Column(
+        modifier = Modifier.padding(16.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Text(
+            text = note.title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.fillMaxWidth(),
+            color = Color.White
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = note.title,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.fillMaxWidth()
+                text = dateFormat.format(note.timestamp),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White.copy(alpha = 0.6f)
             )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = dateFormat.format(note.timestamp),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
 
-                TextButton(
-                    onClick = { showDeleteDialog = true },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text("Delete")
-                }
+            TextButton(
+                onClick = { showDeleteDialog = true },
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("Delete")
             }
         }
     }
@@ -245,15 +306,10 @@ private fun NoteCard(
                             }
                         }
                         is CanvasNote -> {
-                            // Handle canvas note display if needed
                             Text("Canvas note preview not available")
                         }
-                        is ImageNote -> {
-                            // Handle image note display if needed
-                            Text("Image note preview not available")
-                        }
                         else -> {
-                            Text("Unknown note type")
+                            Text("Unsupported note type")
                         }
                     }
                     
