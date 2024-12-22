@@ -3,6 +3,8 @@ package com.vortex.mail_man_1.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -10,10 +12,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalActivity
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalActivity
 import com.vortex.mail_man_1.components.TopBar
 import com.vortex.mail_man_1.model.Note
 import com.vortex.mail_man_1.model.TextNote
+import com.vortex.mail_man_1.model.ChecklistNote
+import com.vortex.mail_man_1.model.CanvasNote
 import com.vortex.mail_man_1.viewmodel.NotesViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Screen for creating new notes
@@ -177,9 +193,13 @@ private fun NoteCard(
     onDelete: () -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showViewCard by remember { mutableStateOf(false) }
+    val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()) }
 
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { showViewCard = true }
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -194,8 +214,17 @@ private fun NoteCard(
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // Timestamp
+                Text(
+                    text = dateFormat.format(note.timestamp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+
+                // Delete button
                 TextButton(
                     onClick = { showDeleteDialog = true },
                     colors = ButtonDefaults.textButtonColors(
@@ -208,6 +237,54 @@ private fun NoteCard(
         }
     }
 
+    // View Note Dialog
+    if (showViewCard) {
+        AlertDialog(
+            onDismissRequest = { showViewCard = false },
+            title = { Text(note.title) },
+            text = {
+                Column {
+                    when (note) {
+                        is TextNote -> Text(note.content)
+                        is ChecklistNote -> {
+                            note.items.forEach { item ->
+                                Row(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = item.isCompleted,
+                                        onCheckedChange = null,
+                                        enabled = false
+                                    )
+                                    Text(item.text)
+                                }
+                            }
+                        }
+                        is CanvasNote -> {
+                            // Handle canvas note display if needed
+                            Text("Canvas note preview not available")
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "Created: ${dateFormat.format(note.timestamp)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showViewCard = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    // Delete confirmation dialog
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
