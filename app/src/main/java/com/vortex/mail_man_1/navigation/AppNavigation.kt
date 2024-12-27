@@ -11,6 +11,7 @@ import com.vortex.mail_man_1.viewmodel.NotesViewModel
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import com.vortex.mail_man_1.components.BottomNavBar
+import com.vortex.mail_man_1.viewmodel.AuthState.Success
 
 /**
  * Main navigation component for the app
@@ -62,7 +63,8 @@ fun AppNavigation(
             
             // Protected routes
             composable(NavDestination.Home.route) {
-                HomeScreen()
+                val username = (authState as AuthState.Success).user?.displayName?.split(" ")?.first() ?: "Guest"
+                HomeScreen(username)
             }
             composable(NavDestination.Notes.route) {
                 NotesListScreen(

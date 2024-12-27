@@ -10,14 +10,11 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavOptions
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.vortex.mail_man_1.navigation.NavDestination
 import com.vortex.mail_man_1.screens.*
@@ -51,7 +48,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Mail_man_1Theme {
                 val authState by authViewModel.authState.collectAsState()
-                
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -59,7 +56,8 @@ class MainActivity : ComponentActivity() {
                     when (authState) {
                         is AuthState.Success -> {
                             val navController = rememberNavController()
-                            
+                            val username = (authState as AuthState.Success).user?.displayName?.split(" ")?.first() ?: "Guest"
+
                             // Add state tracking for current route
                             val currentRoute by navController.currentBackStackEntryAsState()
                             println("Current BackStack Route: ${currentRoute?.destination?.route}") // Debug log
@@ -87,7 +85,7 @@ class MainActivity : ComponentActivity() {
                                     startDestination = NavDestination.Home.route,
                                     modifier = Modifier.padding(paddingValues)
                                 ) {
-                                    composable(NavDestination.Home.route) { HomeScreen() }
+                                    composable(NavDestination.Home.route) { HomeScreen(username) }
                                     composable(NavDestination.Pomodoro.route) { PomodoroScreen() }
                                     composable(NavDestination.CreateNote.route) { 
                                         CreateNoteScreen(
