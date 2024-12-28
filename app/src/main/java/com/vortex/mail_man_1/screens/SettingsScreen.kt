@@ -27,7 +27,6 @@ fun SettingsScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Settings Screen")
             Spacer(modifier = Modifier.height(height = 16.dp))
             Button(onClick = onSignOut) {
                 Text("Sign Out")

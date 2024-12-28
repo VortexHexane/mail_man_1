@@ -16,9 +16,20 @@ class KanbanViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
+    private val _todoCount = MutableStateFlow(0)
+    val todoCount = _todoCount.asStateFlow()
+
+    private val _doingCount = MutableStateFlow(0)
+    val doingCount = _doingCount.asStateFlow()
+
+    init {
+        updateCounts()
+    }
+
     fun addCard(text: String) {
         val newCard = KanbanCard(text = text, section = KanbanSection.TODO)
-        _cards.value = _cards.value + newCard
+        _cards.value += newCard
+        updateCounts()
     }
 
     fun moveCard(card: KanbanCard, newSection: KanbanSection) {
@@ -31,6 +42,7 @@ class KanbanViewModel : ViewModel() {
         _cards.value = _cards.value.map { 
             if (it.id == card.id) it.copy(section = newSection) else it 
         }
+        updateCounts()
         _errorMessage.value = null
     }
 
@@ -44,5 +56,15 @@ class KanbanViewModel : ViewModel() {
 
     fun deleteCard(card: KanbanCard) {
         _cards.value = _cards.value.filter { it != card }
+        updateCounts()
+    }
+
+    private fun updateCounts() {
+        _todoCount.value = _cards.value.count { it.section == KanbanSection.TODO }
+        _doingCount.value = _cards.value.count { it.section == KanbanSection.DOING }
+    }
+
+    fun refreshCounts() {
+        updateCounts()
     }
 } 

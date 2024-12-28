@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import com.vortex.mail_man_1.components.BottomNavBar
 import com.vortex.mail_man_1.viewmodel.AuthState.Success
+import com.vortex.mail_man_1.viewmodel.KanbanViewModel
 
 /**
  * Main navigation component for the app
@@ -22,7 +23,8 @@ fun AppNavigation(
     onSignInClick: () -> Unit,
     onSignOutClick: () -> Unit,
     onGuestClick: () -> Unit,
-    notesViewModel: NotesViewModel
+    notesViewModel: NotesViewModel,
+    kanbanViewModel: KanbanViewModel
 ) {
     val navController = rememberNavController()
 
@@ -64,7 +66,7 @@ fun AppNavigation(
             // Protected routes
             composable(NavDestination.Home.route) {
                 val username = (authState as AuthState.Success).user?.displayName?.split(" ")?.first() ?: "Guest"
-                HomeScreen(username)
+                HomeScreen(username, kanbanViewModel)
             }
             composable(NavDestination.Notes.route) {
                 NotesListScreen(
@@ -82,7 +84,7 @@ fun AppNavigation(
                 PomodoroScreen()
             }
             composable(NavDestination.KanbanBoard.route) {
-                KanbanBoardScreen()
+                KanbanBoardScreen(viewModel = kanbanViewModel)
             }
             composable(NavDestination.Settings.route) {
                 SettingsScreen(

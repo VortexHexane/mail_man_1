@@ -32,7 +32,7 @@ import com.vortex.mail_man_1.components.TopBar
 import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
-fun KanbanBoardScreen(viewModel: KanbanViewModel = viewModel()) {
+fun KanbanBoardScreen(viewModel: KanbanViewModel) {
     Column(
         modifier = Modifier.fillMaxSize()
     ) {

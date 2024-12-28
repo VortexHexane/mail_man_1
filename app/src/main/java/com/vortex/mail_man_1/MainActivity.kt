@@ -2,6 +2,7 @@ package com.vortex.mail_man_1
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
@@ -24,6 +25,7 @@ import com.vortex.mail_man_1.viewmodel.AuthViewModel
 import com.vortex.mail_man_1.components.BottomNavBar
 import kotlinx.coroutines.launch
 import com.vortex.mail_man_1.viewmodel.NotesViewModel
+import com.vortex.mail_man_1.viewmodel.KanbanViewModel
 
 /**
  * Main activity class that handles the app's entry point and authentication flow
@@ -31,10 +33,16 @@ import com.vortex.mail_man_1.viewmodel.NotesViewModel
 class MainActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels()
     private val notesViewModel: NotesViewModel by viewModels()
+    private val kanbanViewModel: KanbanViewModel by viewModels()
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Enable drawing system bar backgrounds
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        // Set the status bar color to black
+        window.statusBarColor = android.graphics.Color.BLACK
 
         // Initialize Google Sign-In launcher
         googleSignInLauncher = registerForActivityResult(
@@ -85,7 +93,7 @@ class MainActivity : ComponentActivity() {
                                     startDestination = NavDestination.Home.route,
                                     modifier = Modifier.padding(paddingValues)
                                 ) {
-                                    composable(NavDestination.Home.route) { HomeScreen(username) }
+                                    composable(NavDestination.Home.route) { HomeScreen(username, kanbanViewModel) }
                                     composable(NavDestination.Pomodoro.route) { PomodoroScreen() }
                                     composable(NavDestination.CreateNote.route) { 
                                         CreateNoteScreen(
@@ -93,7 +101,7 @@ class MainActivity : ComponentActivity() {
                                             viewModel = notesViewModel
                                         )
                                     }
-                                    composable(NavDestination.KanbanBoard.route) { KanbanBoardScreen() }
+                                    composable(NavDestination.KanbanBoard.route) { KanbanBoardScreen(viewModel = kanbanViewModel) }
                                     composable(NavDestination.Settings.route) { 
                                         SettingsScreen(
                                             onNavigateBack = { navController.popBackStack() },
