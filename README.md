@@ -45,7 +45,7 @@ The app features a Kanban board for task management, a note-taking system, and a
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/mail_man_app.git
+   git clone https://github.com/VortexHexane/mail_man_app.git
    ```
 2. Open the project in Android Studio.
 3. Sync the project with Gradle files.
